@@ -6,38 +6,50 @@ import java.util.Random;
  * A simple model of a deer.
  * Deer age, move, eat grass, and die.
  * 
+ * 
+ * @author Patrick Musich
+ * @version 2023.04.20
+ * 
+ * Based on fox model by:
+ * 
  * @author David J. Barnes and Michael Kölling
  * @version 2016.02.29 (2)
- */
+*/
 public class Deer extends Organism
 {
-    // Characteristics shared by all foxes (class variables).
+    // Characteristics shared by all deer(class variables).
     
-    // The age at which a fox can start to breed.
+    //the maximum number of health points a deer can have.
+    private static final int MAX_HEALTH = 8;
+    
+    // The age at which a deer can start to breed.
     private static final int BREEDING_AGE = 15;
-    // The age to which a fox can live.
+    // The age to which a deer can live.
     private static final int MAX_AGE = 150;
-    // The likelihood of a fox breeding.
+    // The likelihood of a deer breeding.
     private static final double BREEDING_PROBABILITY = 0.08;
     // The maximum number of births.
     private static final int MAX_LITTER_SIZE = 2;
-    // The food value of a single rabbit. In effect, this is the
-    // number of steps a fox can go before it has to eat again.
+    // The food value of a single grass. In effect, this is the
+    // number of steps a deer can go before it has to eat again.
     private static final int GRASS_FOOD_VALUE = 9;
     // A shared random number generator to control breeding.
     private static final Random rand = Randomizer.getRandom();
     
     // Individual characteristics (instance fields).
-    // The fox's age.
+    // The deer's age.
     private int age;
-    // The fox's food level, which is increased by eating rabbits.
+    // The deer's food level, which is increased by eating grass.
     private int foodLevel;
+    
+    // The deer's health points.
+    private int health;
 
     /**
-     * Create a fox. A fox can be created as a new born (age zero
+     * Create a deer. A deer can be created as a newborn (age zero
      * and not hungry) or with a random age and food level.
      * 
-     * @param randomAge If true, the fox will have random age and hunger level.
+     * @param randomAge If true, the deer will have random age and hunger level.
      * @param field The field currently occupied.
      * @param location The location within the field.
      */
@@ -47,16 +59,18 @@ public class Deer extends Organism
         if(randomAge) {
             age = rand.nextInt(MAX_AGE);
             foodLevel = rand.nextInt(GRASS_FOOD_VALUE);
+            health = rand.nextInt(MAX_HEALTH);
         }
         else {
             age = 0;
             foodLevel = GRASS_FOOD_VALUE;
+            health = MAX_HEALTH;
         }
     }
     
     /**
-     * This is what the fox does most of the time: it hunts for
-     * rabbits. In the process, it might breed, die of hunger,
+     * This is what the deer does most of the time: it searches for 
+     * grass to eat. In the process, it might breed, die of hunger,
      * or die of old age.
      * @param field The field currently occupied.
      * @param newFoxes A list to return newly born foxes.
@@ -72,6 +86,12 @@ public class Deer extends Organism
             if(newLocation == null) { 
                 // No food found - try to move to a free location.
                 newLocation = getField().freeAdjacentLocation(getLocation());
+                //Decrement health due to lack of food.
+                health = --health;
+                if(health <= 0) {
+                    setDead();
+                }
+                
             }
             // See if it was possible to move.
             if(newLocation != null) {
@@ -85,7 +105,7 @@ public class Deer extends Organism
     }
 
     /**
-     * Increase the age. This could result in the fox's death.
+     * Increase the age. This could result in the deer's death.
      */
     private void incrementAge()
     {
@@ -96,7 +116,7 @@ public class Deer extends Organism
     }
     
     /**
-     * Make this fox more hungry. This could result in the fox's death.
+     * Make this deer more hungry. This could result in the deer's death.
      */
     private void incrementHunger()
     {
@@ -107,8 +127,8 @@ public class Deer extends Organism
     }
     
     /**
-     * Look for rabbits adjacent to the current location.
-     * Only the first live rabbit is eaten.
+     * Look for grass adjacent to the current location.
+     * Only the first live grass is eaten.
      * @return Where food was found, or null if it wasn't.
      */
     private Location findFood()
@@ -124,6 +144,7 @@ public class Deer extends Organism
                 if(grass.isAlive()) { 
                     grass.setDead();
                     foodLevel = GRASS_FOOD_VALUE;
+                    health = ++health;
                     return where;
                 }
             }
@@ -132,13 +153,14 @@ public class Deer extends Organism
     }
     
     /**
-     * Check whether or not this fox is to give birth at this step.
+     * Check whether or not this deer is to give birth at this step.
+     * Deer must be the appropriate age and "healthy".
      * New births will be made into free adjacent locations.
-     * @param newFoxes A list to return newly born foxes.
+     * @param newDeer A list to return newly born deer.
      */
     private void giveBirth(List<Organism> newDeer)
     {
-        // New foxes are born into adjacent locations.
+        // New deer are born into adjacent locations.
         // Get a list of adjacent free locations.
         Field field = getField();
         List<Location> free = field.getFreeAdjacentLocations(getLocation());
@@ -165,10 +187,10 @@ public class Deer extends Organism
     }
 
     /**
-     * A fox can breed if it has reached the breeding age.
+     * A deer can breed if it has reached the breeding age.
      */
     private boolean canBreed()
     {
-        return age >= BREEDING_AGE;
+        return age >= BREEDING_AGE && health >= 5;
     }
 }
