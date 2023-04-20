@@ -87,10 +87,11 @@ public class Deer extends Organism
                 // No food found - try to move to a free location.
                 newLocation = getField().freeAdjacentLocation(getLocation());
                 //Decrement health due to lack of food.
-                health = --health;
-                if(health <= 0) {
-                    setDead();
-                }
+                //Might delete this later as it seems redundant.
+                //health = --health;
+                //if(health <= 0) {
+                    //setDead();
+                //}
                 
             }
             // See if it was possible to move.
