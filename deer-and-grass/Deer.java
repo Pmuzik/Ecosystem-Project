@@ -24,23 +24,29 @@ public class Deer extends Organism
     
     // The age at which a deer can start to breed.
     private static final int BREEDING_AGE = 15;
+    
     // The age to which a deer can live.
     private static final int MAX_AGE = 150;
+    
     // The likelihood of a deer breeding.
     private static final double BREEDING_PROBABILITY = 0.08;
+    
     // The maximum number of births.
     private static final int MAX_LITTER_SIZE = 2;
+    
     // The food value of a single grass. In effect, this is the
     // number of steps a deer can go before it has to eat again.
-    private static final int GRASS_FOOD_VALUE = 9;
+    //private static final int GRASS_FOOD_VALUE = 9;
+    
     // A shared random number generator to control breeding.
     private static final Random rand = Randomizer.getRandom();
     
     // Individual characteristics (instance fields).
     // The deer's age.
     private int age;
+    
     // The deer's food level, which is increased by eating grass.
-    private int foodLevel;
+    //private int foodLevel;
     
     // The deer's health points.
     private int health;
@@ -58,12 +64,10 @@ public class Deer extends Organism
         super(field, location);
         if(randomAge) {
             age = rand.nextInt(MAX_AGE);
-            foodLevel = rand.nextInt(GRASS_FOOD_VALUE);
             health = rand.nextInt(MAX_HEALTH);
         }
         else {
             age = 0;
-            foodLevel = GRASS_FOOD_VALUE;
             health = MAX_HEALTH;
         }
     }
@@ -86,11 +90,6 @@ public class Deer extends Organism
             if(newLocation == null) { 
                 // No food found - try to move to a free location.
                 newLocation = getField().freeAdjacentLocation(getLocation());
-                //Decrement health due to lack of food.
-                health = --health;
-                if(health <= 0) {
-                    setDead();
-                }
                 
             }
             // See if it was possible to move.
@@ -120,14 +119,14 @@ public class Deer extends Organism
      */
     private void incrementHunger()
     {
-        foodLevel--;
-        if(foodLevel <= 0) {
+        health--;
+        if(health <= 0) {
             setDead();
         }
     }
     
     /**
-     * Look for grass adjacent to the current location.
+     * Look for vegetation (tree or grass) adjacent to the current location.
      * Only the first live grass is eaten.
      * @return Where food was found, or null if it wasn't.
      */
@@ -139,11 +138,19 @@ public class Deer extends Organism
         while(it.hasNext()) {
             Location where = it.next();
             Object plant = field.getObjectAt(where);
-            if(plant instanceof Grass) {
+            if(plant instanceof Tree) {
+                Tree tree = (Tree) plant;
+                if(tree.isAlive()) { 
+                    tree.setDead();
+                    health = ++health;
+                    return where;
+                }
+            }
+            
+            else if(plant instanceof Grass){
                 Grass grass = (Grass) plant;
-                if(grass.isAlive()) { 
+                if (grass.isAlive()) {
                     grass.setDead();
-                    foodLevel = GRASS_FOOD_VALUE;
                     health = ++health;
                     return where;
                 }
@@ -187,10 +194,14 @@ public class Deer extends Organism
     }
 
     /**
-     * A deer can breed if it has reached the breeding age.
+     * A deer can breed if it has reached the breeding age
+     * and is in good health.
      */
     private boolean canBreed()
     {
         return age >= BREEDING_AGE && health >= 5;
     }
-}
+    
+    
+    }
+
