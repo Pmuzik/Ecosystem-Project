@@ -1,0 +1,6 @@
+# ignore all ctxt, class, txt, and bluej files
+
+*.txt
+*.ctxt
+*.class
+*.bluej
